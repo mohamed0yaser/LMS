@@ -500,6 +500,21 @@ class LibraryManagementSystem(QMainWindow):
         self.load_returned_from_excel()
         QMessageBox.information(self, "استعادة البيانات", "تم استعادة البيانات بنجاح.")
 
+    def generate_report(self):
+        ws_borrowing = self.wb['Borrowing']
+        ws_returned = self.wb['Returned']
+
+        report_data = []
+        for row in ws_borrowing.iter_rows(min_row=2, values_only=True):
+            report_data.append(row)
+        for row in ws_returned.iter_rows(min_row=2, values_only=True):
+            report_data.append(row)
+
+        self.reports_table.setRowCount(len(report_data))
+        for i, row in enumerate(report_data):
+            for j, value in enumerate(row):
+                self.reports_table.setItem(i, j, QTableWidgetItem(str(value)))
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     system = LibraryManagementSystem()

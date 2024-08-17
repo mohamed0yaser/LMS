@@ -324,6 +324,7 @@ class LibraryManagementSystem(QMainWindow):
         self.wb.save(self.excel_file)
         self.load_books_from_excel()
         self.add_book_window.close()
+
     def borrow_book(self):
         self.borrow_book_window = QWidget()
         self.borrow_book_window.setWindowTitle("استعارة كتاب")
@@ -465,6 +466,26 @@ class LibraryManagementSystem(QMainWindow):
         self.wb.save(self.excel_file)
         self.load_returned_from_excel()
         self.return_book_window.close()
+
+    def search_books(self):
+        search_text = self.search_book_input.text().lower()
+        ws_books = self.wb['Books']
+        self.books_table.setRowCount(0)
+        for row in ws_books.iter_rows(min_row=2, values_only=True):
+            if search_text in row[2].lower():
+                self.books_table.insertRow(self.books_table.rowCount())
+                for i, value in enumerate(row):
+                    self.books_table.setItem(self.books_table.rowCount() - 1, i, QTableWidgetItem(str(value)))
+
+    def search_students(self):
+        search_text = self.search_student_input.text().lower()
+        ws_students = self.wb['students']
+        self.students_table.setRowCount(0)
+        for row in ws_students.iter_rows(min_row=2, values_only=True):
+            if search_text in row[3].lower():
+                self.students_table.insertRow(self.students_table.rowCount())
+                for i, value in enumerate(row):
+                    self.students_table.setItem(self.students_table.rowCount() - 1, i, QTableWidgetItem(str(value)))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

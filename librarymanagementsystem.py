@@ -218,6 +218,35 @@ class LibraryManagementSystem(QMainWindow):
         tab.setLayout(layout)
         return tab
 
+    def load_students_from_excel(self):
+        ws_students = self.wb['students']
+        self.students_table.setRowCount(ws_students.max_row - 1)
+        for i, row in enumerate(ws_students.iter_rows(min_row=2, values_only=True)):
+            for j, value in enumerate(row):
+                self.students_table.setItem(i, j, QTableWidgetItem(str(value)))
+
+    def load_books_from_excel(self):
+        ws_books = self.wb['Books']
+        self.books_table.setRowCount(ws_books.max_row - 1)
+        for i, row in enumerate(ws_books.iter_rows(min_row=2, values_only=True)):
+            for j, value in enumerate(row):
+                self.books_table.setItem(i, j, QTableWidgetItem(str(value)))
+
+    def load_borrowing_from_excel(self):
+        ws_borrowing = self.wb['Borrowing']
+        self.borrowing_table.setRowCount(ws_borrowing.max_row - 1)
+        for i, row in enumerate(ws_borrowing.iter_rows(min_row=2, values_only=True)):
+            for j, value in enumerate(row):
+                self.borrowing_table.setItem(i, j, QTableWidgetItem(str(value)))
+
+    def load_returned_from_excel(self):
+        ws_returned = self.wb['Returned']
+        self.returned_table.setRowCount(ws_returned.max_row - 1)
+        for i, row in enumerate(ws_returned.iter_rows(min_row=2, values_only=True)):
+            for j, value in enumerate(row):
+                self.returned_table.setItem(i, j, QTableWidgetItem(str(value)))
+
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     system = LibraryManagementSystem()

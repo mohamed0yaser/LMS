@@ -487,6 +487,19 @@ class LibraryManagementSystem(QMainWindow):
                 for i, value in enumerate(row):
                     self.students_table.setItem(self.students_table.rowCount() - 1, i, QTableWidgetItem(str(value)))
 
+    def backup_data(self):
+        shutil.copy(self.excel_file, self.backup_file)
+        QMessageBox.information(self, "النسخة الاحتياطيه", "تم اخذ نسخه احتياطيه بنجاح.")
+
+    def restore_data(self):
+        shutil.copy(self.backup_file, self.excel_file)
+        self.wb = load_workbook(self.excel_file)
+        self.load_students_from_excel()
+        self.load_books_from_excel()
+        self.load_borrowing_from_excel()
+        self.load_returned_from_excel()
+        QMessageBox.information(self, "استعادة البيانات", "تم استعادة البيانات بنجاح.")
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     system = LibraryManagementSystem()

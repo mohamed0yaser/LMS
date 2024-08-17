@@ -51,6 +51,43 @@ class LibraryManagementSystem(QMainWindow):
         self.wb.save(self.excel_file)
         print(f"Created new Library Data Excel file with schema: {self.excel_file}")
 
+    def show_login_window(self):
+        self.login_window = QWidget()
+        self.login_window.setWindowTitle("تسجيل الدخول القائد")
+        self.login_window.setGeometry(100, 100, 300, 250)
+
+        layout = QFormLayout()
+
+        self.username_input = QLineEdit()
+        self.password_input = QLineEdit()
+        self.password_input.setEchoMode(QLineEdit.Password)
+
+        login_button = QPushButton("تسجيل الدخول")
+        login_button.clicked.connect(self.login)
+
+        layout.addRow(QLabel("اسم المستخدم:"), self.username_input)
+        layout.addRow(QLabel("كلمة السر:"), self.password_input)
+        layout.addWidget(login_button)
+
+        self.login_window.setLayout(layout)
+        self.login_window.show()
+
+    def login(self):
+        username = self.username_input.text()
+        password = self.password_input.text()
+
+        admin_sheet = self.wb['Admin']
+        for row in admin_sheet.iter_rows(min_row=2, values_only=True):
+            if username == row[0] and password == row[1]:
+                self.logged_in = True
+                self.current_student_id = username
+                QMessageBox.information(self, "تم تسجيل الدخول", f"مرحبا, {username}!")
+                self.create_main_window()
+                self.login_window.close()
+                return
+
+        QMessageBox.critical(self, "فشل تسجيل الدخول", "خطاء فالاسم او كلمة السر.")
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

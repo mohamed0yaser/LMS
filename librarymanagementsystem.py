@@ -88,6 +88,135 @@ class LibraryManagementSystem(QMainWindow):
 
         QMessageBox.critical(self, "فشل تسجيل الدخول", "خطاء فالاسم او كلمة السر.")
 
+    def create_main_window(self):
+        self.main_window = QMainWindow()
+        self.main_window.setWindowTitle("نظام المكتبه الذكى")
+        self.main_window.setGeometry(100, 100, 1200, 800)
+
+        self.tabs = QTabWidget()
+        self.tabs.addTab(self.create_students_tab(), "الطلاب")
+        self.tabs.addTab(self.create_books_tab(), "الكتب")
+        self.tabs.addTab(self.create_borrowing_tab(), "عمليات الاستعاره")
+        self.tabs.addTab(self.create_returned_tab(), "عمليات الاعاده")
+        self.tabs.addTab(self.create_reports_tab(), "التقارير")
+
+        backup_button = QPushButton("نسخة احتياطيه من البيانات")
+        backup_button.clicked.connect(self.backup_data)
+
+        restore_button = QPushButton("استعادة اخر نسخه احتياطيه")
+        restore_button.clicked.connect(self.restore_data)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.tabs)
+        layout.addWidget(backup_button)
+        layout.addWidget(restore_button)
+
+        central_widget = QWidget()
+        central_widget.setLayout(layout)
+        self.main_window.setCentralWidget(central_widget)
+        self.main_window.show()
+
+    def create_students_tab(self):
+        tab = QWidget()
+        layout = QVBoxLayout()
+
+        self.students_table = QTableWidget()
+        self.students_table.setColumnCount(5)
+        self.students_table.setHorizontalHeaderLabels(["ID", "الرقم العسكرى", "الرتبه", "الاسم", "عدد مرات الاستعاره"])
+        layout.addWidget(self.students_table)
+
+        self.load_students_from_excel()
+
+        add_button = QPushButton("اضافة طالب جديد")
+        add_button.clicked.connect(self.add_student)
+        layout.addWidget(add_button)
+
+        search_layout = QHBoxLayout()
+        self.search_student_input = QLineEdit()
+        self.search_student_input.setPlaceholderText("بحث طلاب...")
+        self.search_student_input.textChanged.connect(self.search_students)
+        search_layout.addWidget(self.search_student_input)
+        layout.addLayout(search_layout)
+
+        tab.setLayout(layout)
+        return tab
+
+    def create_books_tab(self):
+        tab = QWidget()
+        layout = QVBoxLayout()
+
+        self.books_table = QTableWidget()
+        self.books_table.setColumnCount(6)
+        self.books_table.setHorizontalHeaderLabels(["ID", "رقم الكتاب", "اسم الكتاب", "الكاتب", "عدد النسخ المتاحه", "عدد مرات الاستعاره"])
+        layout.addWidget(self.books_table)
+
+        self.load_books_from_excel()
+
+        add_button = QPushButton("اضافة كتاب")
+        add_button.clicked.connect(self.add_book)
+        layout.addWidget(add_button)
+
+        search_layout = QHBoxLayout()
+        self.search_book_input = QLineEdit()
+        self.search_book_input.setPlaceholderText("بحث كتب...")
+        self.search_book_input.textChanged.connect(self.search_books)
+        search_layout.addWidget(self.search_book_input)
+        layout.addLayout(search_layout)
+
+        tab.setLayout(layout)
+        return tab
+
+    def create_borrowing_tab(self):
+        tab = QWidget()
+        layout = QVBoxLayout()
+
+        self.borrowing_table = QTableWidget()
+        self.borrowing_table.setColumnCount(6)
+        self.borrowing_table.setHorizontalHeaderLabels(["ID", "رقم الكتاب", "اسم الكتاب", "الرقم العسكرى", "اسم الطالب", "تاريخ الاستعاره"])
+        layout.addWidget(self.borrowing_table)
+
+        self.load_borrowing_from_excel()
+
+        borrow_button = QPushButton("استعاره جديده")
+        borrow_button.clicked.connect(self.borrow_book)
+        layout.addWidget(borrow_button)
+
+        tab.setLayout(layout)
+        return tab
+
+    def create_returned_tab(self):
+        tab = QWidget()
+        layout = QVBoxLayout()
+
+        self.returned_table = QTableWidget()
+        self.returned_table.setColumnCount(7)
+        self.returned_table.setHorizontalHeaderLabels(["ID", "رقم الكتاب", "اسم الكتاب", "الرقم العسكرى", "اسم الطالب", "تاريخ الاستعاره", "تاريخ الاستعاده"])
+        layout.addWidget(self.returned_table)
+
+        self.load_returned_from_excel()
+
+        return_button = QPushButton("استعادة كتاب")
+        return_button.clicked.connect(self.return_book)
+        layout.addWidget(return_button)
+
+        tab.setLayout(layout)
+        return tab
+
+    def create_reports_tab(self):
+        tab = QWidget()
+        layout = QVBoxLayout()
+
+        self.reports_table = QTableWidget()
+        self.reports_table.setColumnCount(7)
+        self.reports_table.setHorizontalHeaderLabels(["ID", "رقم الكتاب", "اسم الكتاب", "الرقم العسكرى", "اسم الطالب", "تاريخ الاستعاره", "تاريخ الاستعاده"])
+        layout.addWidget(self.reports_table)
+
+        generate_report_button = QPushButton("انشاء تقرير")
+        generate_report_button.clicked.connect(self.generate_report)
+        layout.addWidget(generate_report_button)
+
+        tab.setLayout(layout)
+        return tab
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

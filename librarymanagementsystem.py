@@ -324,6 +324,65 @@ class LibraryManagementSystem(QMainWindow):
         self.wb.save(self.excel_file)
         self.load_books_from_excel()
         self.add_book_window.close()
+    def borrow_book(self):
+        self.borrow_book_window = QWidget()
+        self.borrow_book_window.setWindowTitle("استعارة كتاب")
+        self.borrow_book_window.setGeometry(100, 100, 400, 300)
+
+        layout = QFormLayout()
+
+        self.borrow_book_dropdown = QComboBox()
+        self.borrow_student_dropdown = QComboBox()
+        self.borrow_date = QDateEdit()
+        self.borrow_date.setDate(datetime.now())
+
+        # Load books into the dropdown
+        ws_books = self.wb['Books']
+        for row in ws_books.iter_rows(min_row=2, values_only=True):
+            self.borrow_book_dropdown.addItem(row[2], userData=row[1])
+
+        # Load students into the dropdown
+        ws_students = self.wb['students']
+        for row in ws_students.iter_rows(min_row=2, values_only=True):
+            self.borrow_student_dropdown.addItem(row[3], userData=row[1])
+
+        borrow_button = QPushButton("استعارة كتاب")
+        borrow_button.clicked.connect(self.save_borrowing)
+
+        layout.addRow(QLabel("الكتاب:"), self.borrow_book_dropdown)
+        layout.addRow(QLabel("الطالب:"), self.borrow_student_dropdown)
+        layout.addRow(QLabel("التاريخ:"), self.borrow_date)
+        layout.addWidget(borrow_button)
+
+        self.borrow_book_window.setLayout(layout)
+        self.borrow_book_window.show()
+
+    def save_borrowing(self):
+        book_id = self.borrow_book_dropdown.currentData()
+        student_id = self.borrow_student_dropdown.currentData()
+        borrow_date = self.borrow_date.date().toString(Qt.ISODate)
+
+        if not book_id or not student_id:
+            QMessageBox.warning(self, "خطأ", "برجاء اختيار كلا من الطالب والكتاب.")
+            return
+
+        ws_books = self.wb['Books']
+        for row in ws_books.iter_rows(min_row=2, values_only=False):
+            if row[1].value == book_id:
+                if row[4].value <= 0:
+                    QMessageBox.warning(self, "الكتاب غير متاح", "لم يتبقى نسخ من الكتاب.")
+                    return
+                row[4].value -= 1
+                row[5].value += 1
+
+        ws_borrowing = self.wb['Borrowing']
+        new_id = ws_borrowing.max_row
+        book_title = self.borrow_book_dropdown.currentText()
+        student_name = self.borrow_student_dropdown.currentText()
+        ws_borrowing.append([new_id, book_id, book_title, student_id, student_name, borrow_date])
+        self.wb.save(self.excel_file)
+        self.load_borrowing_from_excel()
+        self.borrow_book_window.close()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

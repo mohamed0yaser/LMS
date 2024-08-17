@@ -384,6 +384,88 @@ class LibraryManagementSystem(QMainWindow):
         self.load_borrowing_from_excel()
         self.borrow_book_window.close()
 
+    def return_book(self):
+        self.return_book_window = QWidget()
+        self.return_book_window.setWindowTitle("استعادة الكتاب")
+        self.return_book_window.setGeometry(100, 100, 400, 300)
+
+        layout = QFormLayout()
+
+        self.return_book_dropdown = QComboBox()
+        self.return_student_dropdown = QComboBox()
+        self.return_date = QDateEdit()
+        self.return_date.setDate(datetime.now())
+
+        # Load borrowed books into the dropdown
+        ws_borrowing = self.wb['Borrowing']
+        borrowed_books = set()
+        borrowed_students = set()
+        
+        for row in ws_borrowing.iter_rows(min_row=2, values_only=True):
+            borrowed_books.add((row[1], row[2]))  # (Book ID, Book Title)
+            borrowed_students.add((row[3], row[4]))  # (student ID, student Name)
+        
+        # Populate the book dropdown with borrowed books
+        for book_id, book_title in borrowed_books:
+            self.return_book_dropdown.addItem(book_title, userData=book_id)
+
+        # Populate the student dropdown with borrowed students
+        for student_id, student_name in borrowed_students:
+            self.return_student_dropdown.addItem(student_name, userData=student_id)
+
+        return_button = QPushButton("استعادة كتاب")
+        return_button.clicked.connect(self.save_returning)
+
+        layout.addRow(QLabel("الكتاب:"), self.return_book_dropdown)
+        layout.addRow(QLabel("الطالب:"), self.return_student_dropdown)
+        layout.addRow(QLabel("تاريخ الاستعاده:"), self.return_date)
+        layout.addWidget(return_button)
+
+        self.return_book_window.setLayout(layout)
+        self.return_book_window.show()
+
+    def save_returning(self):
+        book_id = self.return_book_dropdown.currentData()
+        student_id = self.return_student_dropdown.currentData()
+        return_date = self.return_date.date().toString(Qt.ISODate)
+
+        if not book_id or not student_id:
+            QMessageBox.warning(self, "خطأ", "برجاء اختيار كلا من الطالب والكتاب.")
+            return
+
+        ws_borrowing = self.wb['Borrowing']
+        ws_returned = self.wb['Returned']
+        borrowed_date = None
+
+        # Find and remove the borrowing record
+        for row in ws_borrowing.iter_rows(min_row=2, values_only=False):
+            if row[1].value == book_id and row[3].value == student_id:
+                borrowed_date = row[5].value
+                ws_borrowing.delete_rows(row[0].row)
+                break
+
+        if borrowed_date is None:
+            QMessageBox.warning(self, "خطأ فالاستعاده", "لا يوجد استعاره لهذا الكتاب او الطالب")
+            return
+
+        # Update the "Books" sheet to increase the available copies
+        ws_books = self.wb['Books']
+        for row in ws_books.iter_rows(min_row=2, values_only=False):
+            if row[1].value == book_id:
+                row[4].value += 1
+                break
+
+        # Add a record to the "Returned" sheet
+        new_id = ws_returned.max_row
+        book_title = self.return_book_dropdown.currentText()
+        student_name = self.return_student_dropdown.currentText()
+        ws_returned.append([new_id, book_id, book_title, student_id, student_name, borrowed_date, return_date])
+        
+        # Save the changes
+        self.wb.save(self.excel_file)
+        self.load_returned_from_excel()
+        self.return_book_window.close()
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     system = LibraryManagementSystem()

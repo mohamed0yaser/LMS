@@ -246,6 +246,84 @@ class LibraryManagementSystem(QMainWindow):
             for j, value in enumerate(row):
                 self.returned_table.setItem(i, j, QTableWidgetItem(str(value)))
 
+    def add_student(self):
+        self.add_student_window = QWidget()
+        self.add_student_window.setWindowTitle("اضافة طالب جديد")
+        self.add_student_window.setGeometry(100, 100, 400, 300)
+
+        layout = QFormLayout()
+
+        self.add_student_id = QLineEdit()
+        self.add_student_name = QLineEdit()
+        self.add_student_position = QLineEdit()
+
+        add_button = QPushButton("اضافة طالب جديد")
+        add_button.clicked.connect(self.save_student)
+
+        layout.addRow(QLabel("الرقم العسكرى:"), self.add_student_id)
+        layout.addRow(QLabel("الاسم:"), self.add_student_name)
+        layout.addRow(QLabel("الرتبه:"), self.add_student_position)
+        layout.addWidget(add_button)
+
+        self.add_student_window.setLayout(layout)
+        self.add_student_window.show()
+
+    def save_student(self):
+        student_id = self.add_student_id.text()
+        student_name = self.add_student_name.text()
+        student_position = self.add_student_position.text()
+
+        if not student_id or not student_name or not student_position:
+            QMessageBox.warning(self, "خطأ", "برجاء ملئ جميع المدخلات.")
+            return
+
+        ws_students = self.wb['students']
+        new_id = ws_students.max_row
+        ws_students.append([new_id, student_id, student_position, student_name, 0])
+        self.wb.save(self.excel_file)
+        self.load_students_from_excel()
+        self.add_student_window.close()
+
+    def add_book(self):
+        self.add_book_window = QWidget()
+        self.add_book_window.setWindowTitle("اضافة كتاب جديد")
+        self.add_book_window.setGeometry(100, 100, 400, 300)
+
+        layout = QFormLayout()
+
+        self.add_book_id = QLineEdit()
+        self.add_book_title = QLineEdit()
+        self.add_book_author = QLineEdit()
+        self.add_book_copies = QLineEdit()
+
+        add_button = QPushButton("اضافة كتاب جديد")
+        add_button.clicked.connect(self.save_book)
+
+        layout.addRow(QLabel("رقم الكتاب:"), self.add_book_id)
+        layout.addRow(QLabel("اسم الكتاب:"), self.add_book_title)
+        layout.addRow(QLabel("الكاتب:"), self.add_book_author)
+        layout.addRow(QLabel("عدد النسخ:"), self.add_book_copies)
+        layout.addWidget(add_button)
+
+        self.add_book_window.setLayout(layout)
+        self.add_book_window.show()
+
+    def save_book(self):
+        book_id = self.add_book_id.text()
+        book_title = self.add_book_title.text()
+        book_author = self.add_book_author.text()
+        book_copies = self.add_book_copies.text()
+
+        if not book_id or not book_title or not book_author or not book_copies:
+            QMessageBox.warning(self,"خطأ", "برجاء ملئ جميع المدخلات.")
+            return
+
+        ws_books = self.wb['Books']
+        new_id = ws_books.max_row
+        ws_books.append([new_id, book_id, book_title, book_author, int(book_copies), 0])
+        self.wb.save(self.excel_file)
+        self.load_books_from_excel()
+        self.add_book_window.close()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
